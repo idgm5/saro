@@ -118,5 +118,3 @@ Respect Meta's license for Llama models.
 ---
 
 > "Saro isn't just smart — she's smarter **than you**, and she'll make sure you know it."
-
----
