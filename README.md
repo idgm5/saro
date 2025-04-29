@@ -16,6 +16,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 - 🛡️ Secure token management via dotenv
 - 📊 Full system logging for events and errors
 - 🎝️ Dynamic prodigy girl personality (adaptive, sarcastic, fun)
+- 🗣️ Every text reply is also spoken using realistic voice synthesis (gTTS), sent as a Telegram voice message.
 
 ---
 
@@ -24,11 +25,13 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 | Technology | Usage |
 | :--- | :--- |
 | Llama.cpp | Local AI inference (GPU accelerated) |
-| Python 3.13 | Bot backend |
+| Python 3.11 | Bot backend |
 | python-telegram-bot | Telegram Bot API |
 | requests | Communication with Llama server |
 | python-dotenv | Environment variable management |
 | langdetect | Detects input language |
+| gTTS | Google Text-to-Speech |
+| pydub | audio conversion |
 
 ---
 
@@ -77,7 +80,7 @@ This will start the local HTTP server where Saro will send requests.
 ### 5. Start the Bot
 
 ```bash
-python bot.py
+py -3.11 bot.py
 ```
 
 👉️ Saro is now alive on Telegram and ready to talk (or roast you).
@@ -111,7 +114,6 @@ Respect Meta's license for Llama models.
 ## 📊 Planned Features
 
 - Persistent memory (remember user facts across chats)
-- Voice output (Text-to-Speech)
 - Local network/mobile access
 - Better multilingual tone adjustment
 
