@@ -1,2 +1,2 @@
 # sarcasticbot
-Testing AGI
+Built with llama.cpp + Telegram API 🚀
