@@ -120,12 +120,3 @@ Respect Meta's license for Llama models.
 > "Saro isn't just smart — she's smarter **than you**, and she'll make sure you know it."
 
 ---
-
-## 📦 Badges (Optional)
-
-```markdown
-![Python](https://img.shields.io/badge/Python-3.13-blue)
-![Telegram Bot](https://img.shields.io/badge/Telegram-Bot-blue)
-![llama.cpp](https://img.shields.io/badge/Powered%20By-llama.cpp-lightgrey)
-```
-
