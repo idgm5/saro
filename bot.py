@@ -10,6 +10,10 @@ from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 import nest_asyncio
 
+import torch
+print(torch.cuda.is_available())  # Should return True if CUDA is working
+print(torch.cuda.get_device_name(0))  # Should print your GPU's name
+
 nest_asyncio.apply()
 load_dotenv()
 
