@@ -1,6 +1,6 @@
 # Saro - The Sarcastic Genius Chatbot 🤖✨
 
-**Saro** is a personal AI chatbot powered by **Llama 3**, running **locally** on your own hardware — no external APIs required.
+**Saro** is a personal AI chatbot powered by **Llama 4**, running **locally** on your own hardware — no external APIs required.
 
 She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram**!
 
@@ -8,7 +8,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 
 ## 🚀 Features
 
-- 🧑‍🔬 Built with Llama 3 (8B Instruct Model) via llama.cpp
+- 🧑‍🔬 Built with Llama 4 (Llama-4-Scout-17B-16E-Instruct-UD-Q3_K_XL) via llama.cpp
 - 🔥 Runs locally with CUDA acceleration (RTX 3090 Ti setup)
 - 🔐 No API keys required (only Telegram Bot Token)
 - 👤 Multi-language sarcasm (detects Spanish, French, Japanese, etc.)
@@ -69,8 +69,7 @@ _(Make sure `.env` is listed in your `.gitignore`!)_
 ### 4. Launch the Llama Server
 
 ```bash
-cd llama.cpp/build/bin/Release
-./llama-server.exe --model "C:\\path\\to\\Meta-Llama-3-8B-Instruct.Q5_K_M.gguf" --ctx-size 4096 --port 8080 --host 127.0.0.1
+.\build\bin\Release\llama-server.exe --model "models\Llama-4-Scout-17B-16E-Instruct-UD-Q3_K_XL.gguf" --n-gpu-layers 32 --ctx-size 4096 --threads 12
 ```
 
 This will start the local HTTP server where Saro will send requests.
