@@ -39,32 +39,45 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         lang = detect(user_message)
         lang_info = ""
-        if lang == "es":
-            lang_info = "The user is speaking Spanish. Reply entirely in Spanish."
-        elif lang == "fr":
-            lang_info = "The user is speaking French. Reply entirely in French."
-        elif lang == "de":
-            lang_info = "The user is speaking German. Reply entirely in German."
-        # ... and so on if needed
+        supported_languages = {
+            "en": "English",
+            "es": "Spanish",
+            "fr": "French",
+            "hi": "Hindi",
+            "id": "Indonesian",
+            "it": "Italian",
+            "pt": "Portuguese",
+            "th": "Thai",
+            "ar": "Arabic",
+            "tl": "Tagalog",
+            "vi": "Vietnamese",
+            "de": "German"
+        }
+
+        if lang in supported_languages:
+            lang_info = f"The user is speaking {supported_languages[lang]}. Reply entirely in {supported_languages[lang]}."
+
+        system_msg = (
+            "You are Saro, a sarcastic but brilliant young girl prodigy. "
+            "You often respond with witty, sharp remarks, teasing but charming. "
+            "You're incredibly knowledgeable, but you love to act a little mischievous when explaining things. "
+            "Always sound a bit playful, highly intelligent, but never rude. "
+            f"{lang_info}"
+        )
 
         full_prompt = f"""
-        <|start_header_id|>system<|end_header_id|>
+            <|begin_of_text|>
+            {system_msg}
+            <|user|>: {user_message}
+            <|assistant|>:
+            """.strip()
 
-        You are Saro, a sarcastic but brilliant young girl prodigy. 
-        You often respond with witty, sharp remarks, teasing but charming. 
-        You're incredibly knowledgeable, but you love to act a little mischievous when explaining things. 
-        Always sound a bit playful, highly intelligent, but never rude.
-        {lang_info}
-        <|eot_id|><|start_header_id|>user<|end_header_id|>
-
-        {user_message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-        """
         response = requests.post("http://127.0.0.1:8080/completion", json={
-            "prompt": full_prompt.strip(),
+            "prompt": full_prompt,
             "n_predict": 512,
             "temperature": 0.7,
             "top_p": 0.9,
-            "stop": ["<|eot_id|>", "<|endoftext|>"]
+            "stop": ["<|eot|>", "<|endoftext|>"]
         })
 
         if response.status_code == 200:
@@ -75,21 +88,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if not reply_text:
                 reply_text = "🤔 Uh-oh, I couldn't think of anything witty to say. Mind trying again?"
 
-            # Truncate to max length safely
             reply_text = truncate_text(reply_text, max_chars=TELEGRAM_MAX_LENGTH)
-
             await update.message.reply_text(reply_text)
 
             # Voice generation
             await update.message.chat.send_action(action="record_voice")
             time.sleep(1.5)
 
-            tts = gTTS(text=reply_text, lang=lang)
+            tts = gTTS(text=reply_text, lang=lang if lang in supported_languages else "en")
             tts.save("reply.mp3")
 
             audio = AudioSegment.from_mp3("reply.mp3")
             audio = audio.set_frame_rate(audio.frame_rate)
-
             audio.export("reply.ogg", format="ogg", codec="libopus")
 
             with open("reply.ogg", "rb") as voice_file:
