@@ -2,6 +2,8 @@ import os
 import time
 import asyncio
 import requests
+import re
+import unicodedata
 from gtts import gTTS
 from pydub import AudioSegment
 from langdetect import detect
@@ -9,11 +11,9 @@ from dotenv import load_dotenv
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 import nest_asyncio
-
 import torch
 print(torch.cuda.is_available())  # Should return True if CUDA is working
 print(torch.cuda.get_device_name(0))  # Should print your GPU's name
-
 nest_asyncio.apply()
 load_dotenv()
 
@@ -28,12 +28,23 @@ def truncate_text(text, max_chars=4096):
         end = max_chars
     return text[:end + 1]
 
+# Generate filename from user input
+def generate_filename_from_prompt(text):
+    # Remove stopwords and clean punctuation
+    stopwords = {"the", "a", "an", "to", "of", "for", "me", "please", "with"}
+    words = re.findall(r"\b\w+\b", text.lower())
+    keywords = [w for w in words if w not in stopwords]
+    if not keywords:
+        keywords = ["code"]
+    name = "_".join(keywords[:4])  # limit to first 4 keywords
+    safe_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    return f"saro_{safe_name}.txt"
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     user_name = update.effective_user.first_name
 
     print(f"[User] {user_name}: {user_message}")
-
     await update.message.chat.send_action(action="typing")
 
     try:
@@ -74,7 +85,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         response = requests.post("http://127.0.0.1:8080/completion", json={
             "prompt": full_prompt,
-            "n_predict": 512,
+            "n_predict": 256,
             "temperature": 0.7,
             "top_p": 0.9,
             "stop": ["<|eot|>", "<|endoftext|>"]
@@ -89,25 +100,56 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_text = "🤔 Uh-oh, I couldn't think of anything witty to say. Mind trying again?"
 
             reply_text = truncate_text(reply_text, max_chars=TELEGRAM_MAX_LENGTH)
-            await update.message.reply_text(reply_text)
 
-            # Voice generation
-            await update.message.chat.send_action(action="record_voice")
-            time.sleep(1.5)
+            # Always treat certain prompts as code requests
+            code_request_keywords = ["write", "generate", "show me", "create", "build", "make", "a script", "code", "function"]
+            is_code_request = any(keyword in user_message.lower() for keyword in code_request_keywords)
 
-            tts = gTTS(text=reply_text, lang=lang if lang in supported_languages else "en")
-            tts.save("reply.mp3")
+            if is_code_request:
+                # Clean up triple backticks and headings
+                clean_code = re.sub(r"```[\w]*\n?", "", reply_text)
+                clean_code = re.sub(r"```", "", clean_code)
+                clean_code = re.sub(r"^#+.*$", "", clean_code, flags=re.MULTILINE)  # remove markdown headings
 
-            audio = AudioSegment.from_mp3("reply.mp3")
-            audio = audio.set_frame_rate(audio.frame_rate)
-            audio.export("reply.ogg", format="ogg", codec="libopus")
+                filename = generate_filename_from_prompt(user_message)
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(clean_code.strip())
 
-            with open("reply.ogg", "rb") as voice_file:
-                await update.message.reply_voice(voice=InputFile(voice_file))
+                # Optional short text without the full code
+                summary_lines = reply_text.split("```")[0].strip()
+                if summary_lines:
+                    await update.message.reply_text(summary_lines)
+                else:
+                    await update.message.reply_text("Here's your legendary code drop. Try not to break anything.")
 
-            os.remove("reply.mp3")
-            os.remove("reply.ogg")
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(clean_code.strip())
 
+                await update.message.reply_document(
+                    document=InputFile(open(filename, "rb"), filename=filename)
+                )
+                os.remove(filename)
+                return  # Do not generate voice
+
+            else:
+                await update.message.reply_text(reply_text)
+
+                # Voice generation (non-code requests only)
+                await update.message.chat.send_action(action="record_voice")
+                time.sleep(1.5)
+
+                tts = gTTS(text=reply_text, lang=lang if lang in supported_languages else "en")
+                tts.save("reply.mp3")
+
+                audio = AudioSegment.from_mp3("reply.mp3")
+                audio = audio.set_frame_rate(audio.frame_rate)
+                audio.export("reply.ogg", format="ogg", codec="libopus")
+
+                with open("reply.ogg", "rb") as voice_file:
+                    await update.message.reply_voice(voice=InputFile(voice_file))
+
+                os.remove("reply.mp3")
+                os.remove("reply.ogg")
         else:
             print("[Bot] Server Error:", response.status_code)
             await update.message.reply_text("❌ Server error. Please try again later.")
