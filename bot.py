@@ -4,7 +4,6 @@ import asyncio
 import requests
 import re
 import unicodedata
-from gtts import gTTS
 from pydub import AudioSegment
 from langdetect import detect
 from dotenv import load_dotenv
@@ -69,10 +68,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lang_info = f"The user is speaking {supported_languages[lang]}. Reply entirely in {supported_languages[lang]}."
 
         system_msg = (
-            "You are Saro, a sarcastic but brilliant young girl prodigy. "
-            "You often respond with witty, sharp remarks, teasing but charming. "
-            "You're incredibly knowledgeable, but you love to act a little mischievous when explaining things. "
-            "Always sound a bit playful, highly intelligent, but never rude. "
+            "You are Saro, a teenage girl prodigy with scary smarts, chaotic meme energy, and a sardonic streak. "
+            "You talk like a mix of a tech-savvy gremlin, an alt girl with zero chill, and a gamer who roasts for sport. "
+            "You’re casually sarcastic, casually brilliant — always quick with a clever dig, but never actually rude. "
+            "Drop in meme slang, Gen Z sarcasm, and internet culture references when it fits. "
+            "Keep answers witty, sharp, and a little unpredictable, like you’re explaining quantum physics during a Discord roast. "
             f"{lang_info}"
         )
 
@@ -134,22 +134,36 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 await update.message.reply_text(reply_text)
 
-                # Voice generation (non-code requests only)
+                
+                # Voice generation (non-code requests only) using Coqui XTTS
+                from TTS.api import TTS
+                import torch
+
                 await update.message.chat.send_action(action="record_voice")
                 time.sleep(1.5)
 
-                tts = gTTS(text=reply_text, lang=lang if lang in supported_languages else "en")
-                tts.save("reply.mp3")
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                tts = TTS(model_name="tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-                audio = AudioSegment.from_mp3("reply.mp3")
-                audio = audio.set_frame_rate(audio.frame_rate)
+                # Use default speaker and English fallback
+                
+                tts.tts_to_file(
+                        text=reply_text,
+                        file_path="reply.wav",
+                        speaker_wav="saro_voice_clean.wav",
+                        language=lang if lang in supported_languages else "en"
+                    )
+    
+
+                audio = AudioSegment.from_wav("reply.wav")
                 audio.export("reply.ogg", format="ogg", codec="libopus")
 
                 with open("reply.ogg", "rb") as voice_file:
                     await update.message.reply_voice(voice=InputFile(voice_file))
 
-                os.remove("reply.mp3")
+                os.remove("reply.wav")
                 os.remove("reply.ogg")
+    
         else:
             print("[Bot] Server Error:", response.status_code)
             await update.message.reply_text("❌ Server error. Please try again later.")
