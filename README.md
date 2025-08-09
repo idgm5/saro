@@ -40,7 +40,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOURNAME/sarcasticbot.git
+git clone https://github.com/idgm5/saro.git
 cd sarcasticbot
 ```
 
