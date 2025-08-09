@@ -41,7 +41,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 
 ```bash
 git clone https://github.com/idgm5/saro.git
-cd sarcasticbot
+cd saro
 ```
 
 ### 2. Install dependencies
