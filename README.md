@@ -16,7 +16,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 - 🛡️ Secure token management via dotenv
 - 📊 Full system logging for events and errors
 - 🎝️ Dynamic prodigy girl personality (adaptive, sarcastic, fun)
-- 🗣️ Every text reply is also spoken using realistic voice synthesis (gTTS), sent as a Telegram voice message.
+- 🗣️ Every text reply is also spoken using realistic voice synthesis (TTS), sent as a Telegram voice message.
 
 ---
 
