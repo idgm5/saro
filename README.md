@@ -30,7 +30,7 @@ She's witty, sarcastic, playful, multilingual, and talks directly on **Telegram*
 | requests | Communication with Llama server |
 | python-dotenv | Environment variable management |
 | langdetect | Detects input language |
-| gTTS | Google Text-to-Speech |
+| TTS | Text-to-Speech |
 | pydub | audio conversion |
 
 ---
